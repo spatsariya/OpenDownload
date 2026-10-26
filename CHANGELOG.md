@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.2.0 — Cross-platform preview
+
+- Native macOS Apple Silicon and Intel app bundles in DMG images.
+- Linux x64 Debian package and portable archive with a per-user installer.
+- Native Android 10+ app using the system background download service.
+- Native desktop history locations and folder-opening commands.
+- Target-OS desktop tests and packaged startup checks; Android lint and emulator download-integrity test.
+
+Android has a smaller feature set: no manual pause/resume, segmentation, or speed
+limits. Mac apps are not notarized. Coverage on real devices remains limited.
+
 ## 0.1.0 — First public preview
 
 - Compact Windows interface with search, sorting, status filters, and a details pane.

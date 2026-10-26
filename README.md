@@ -1,14 +1,14 @@
 # OpenDownload
 
-A compact, independent download manager for Windows. No account or subscription.
+An independent download manager for Windows, macOS, Linux, and Android. No account or subscription.
 
-**[Download Windows installer](https://github.com/spatsariya/OpenDownload/releases/download/v0.1.0/OpenDownload-0.1.0-x64.msi)** · **[Project website](https://spatsariya.github.io/OpenDownload/)** · **[Release notes](https://github.com/spatsariya/OpenDownload/releases/tag/v0.1.0)**
+**[Download Windows installer](https://github.com/spatsariya/OpenDownload/releases/download/v0.2.0/OpenDownload-0.2.0-x64.msi)** · **[Project website](https://spatsariya.github.io/OpenDownload/)** · **[Release notes](https://github.com/spatsariya/OpenDownload/releases/tag/v0.2.0)**
 
 ![OpenDownload interface with illustrative sample downloads](docs/assets/app-preview.png)
 
-## Install
+## Install on Windows
 
-1. Download **OpenDownload-0.1.0-x64.msi** from [Releases](https://github.com/spatsariya/OpenDownload/releases).
+1. Download **OpenDownload-0.2.0-x64.msi** from [Releases](https://github.com/spatsariya/OpenDownload/releases).
 2. Open it and follow the setup wizard. Python is included.
 3. Launch OpenDownload from your desktop or Start menu, choose **Add download**, and paste a direct HTTP or HTTPS file link.
 
@@ -20,7 +20,22 @@ Default installation: `%LOCALAPPDATA%\Programs\OpenDownload`.
 Uninstall through Windows Settings → Apps → Installed apps → OpenDownload.
 Uninstall preserves your downloaded files, partial downloads, and history.
 
-## Features
+## macOS, Linux, and Android
+
+Use the [platform download page](https://spatsariya.github.io/OpenDownload/downloads.html).
+macOS has separate Apple Silicon and Intel DMGs (not notarized); Linux x64 has
+an Ubuntu/Debian .deb and portable archive. Android 10+ has a signed sideloadable APK.
+
+The smaller native Android app uses the system download service for background
+HTTP/HTTPS transfers, progress, notifications, and opening completed files. It
+does not include manual pause/resume, segmentation, or speed limits. Long-pressing
+a row removes the download and deletes its file. This is not a Google Play release.
+
+Desktop builds run engine tests and packaged startup checks on their target OS.
+Android runs lint and an emulator download-integrity check. Real-device coverage
+remains limited. See the release notes for installation and platform requirements.
+
+## Desktop features
 
 - Single or segmented HTTP/HTTPS downloads with 1, 2, 4, or 8 connections.
 - Server-dependent pause/resume and local saved history.
@@ -72,7 +87,7 @@ powershell -File packaging\build.ps1
 ```
 
 The build uses pinned PyInstaller and WiX Toolset versions. The installer appears
-in `release/OpenDownload-0.1.0-x64.msi`. The MSI is intentionally not committed to
+in `release/OpenDownload-0.2.0-x64.msi`. The MSI is intentionally not committed to
 Git; distribution binaries live in GitHub Releases.
 
 ## Website

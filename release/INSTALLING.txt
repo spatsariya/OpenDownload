@@ -1,0 +1,18 @@
+OpenDownload 0.1.0 - Windows x64
+
+Double-click OpenDownload-0.1.0-x64.msi and follow the setup wizard.
+The default location is %LOCALAPPDATA%\Programs\OpenDownload.
+Desktop and Start menu shortcuts are included.
+Python and Tcl/Tk are bundled; no separate Python installation is required.
+
+Uninstall through Windows Settings > Apps > Installed apps > OpenDownload.
+Uninstall preserves downloaded files, partial downloads, and history.
+History remains in %LOCALAPPDATA%\OpenDownload\history.json.
+
+This preview installer and app are unsigned. Windows may show an unknown
+publisher notice. No paid signing certificate was used.
+
+Rebuild from the source project with:
+  powershell -File packaging\build.ps1
+
+The build needs Python, .NET SDK, and network access to obtain build tools.

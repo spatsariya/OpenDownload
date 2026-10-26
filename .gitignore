@@ -1,0 +1,17 @@
+__pycache__/
+*.pyc
+.build-tools*/
+.tools/
+.wix/
+build/
+dist/
+release/*.msi
+release/*.wixpdb
+packaging/OpenDownload.wxs
+packaging/innosetup*.exe
+packaging/InnoSetup/
+preview.png
+dialog-preview.png
+compact-preview.png
+.venv/
+*.log

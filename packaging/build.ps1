@@ -21,6 +21,6 @@ $env:DOTNET_ROLL_FORWARD = 'Major'
 Check-Result
 python packaging\make_msi.py
 Check-Result
-.\.build-tools-wix4\wix.exe build packaging\OpenDownload.wxs -arch x64 -ext WixToolset.UI.wixext -o release\OpenDownload-0.1.0-x64.msi
+.\.build-tools-wix4\wix.exe build packaging\OpenDownload.wxs -arch x64 -ext WixToolset.UI.wixext -o release\OpenDownload-0.2.0-x64.msi
 Check-Result
-Get-FileHash 'release\OpenDownload-0.1.0-x64.msi' -Algorithm SHA256
+Get-FileHash 'release\OpenDownload-0.2.0-x64.msi' -Algorithm SHA256

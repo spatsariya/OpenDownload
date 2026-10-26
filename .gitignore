@@ -15,3 +15,8 @@ dialog-preview.png
 compact-preview.png
 .venv/
 *.log
+android/.gradle/
+android/local.properties
+android/**/build/
+*.jks
+*.keystore

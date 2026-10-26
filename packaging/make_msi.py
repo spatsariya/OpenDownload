@@ -24,7 +24,7 @@ def ident(prefix, value):
 
 
 wix = ET.Element('{'+ns+'}Wix')
-package = node(wix,'Package',Name='OpenDownload',Manufacturer='OpenDownload',Version='0.1.0',
+package = node(wix,'Package',Name='OpenDownload',Manufacturer='OpenDownload',Version='0.2.0',
                UpgradeCode='CDFF6423-9AA3-42D3-B13B-58E24C471DF7',Scope='perUser',InstallerVersion='500',Compressed='yes')
 node(package,'MajorUpgrade',DowngradeErrorMessage='A newer version of OpenDownload is already installed.')
 node(package,'MediaTemplate',EmbedCab='yes',CompressionLevel='high')

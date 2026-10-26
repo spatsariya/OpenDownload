@@ -4,6 +4,7 @@ import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
 from pathlib import Path
 from engine import Manager
+from platform_support import VERSION, data_directory, open_directory
 from ui import Button, Panel, Wallpaper, label, INK, MUTED, SURFACE, BLUE
 
 
@@ -22,7 +23,7 @@ class App(tk.Tk):
         self.geometry('1320x800')
         self.minsize(980, 560)
         self.configure(bg='white')
-        self.manager = Manager(Path(os.environ.get('LOCALAPPDATA', str(Path.home()))) / 'OpenDownload' / 'history.json')
+        self.manager = Manager(data_directory() / 'history.json')
         self.directory = tk.StringVar(value=str(Path.home() / 'Downloads'))
         self.filter = tk.StringVar(value='All downloads')
         self.search = tk.StringVar()
@@ -129,7 +130,10 @@ class App(tk.Tk):
         selected = self.selected()
         path = Path(selected[0].destination).parent if selected else Path(self.directory.get())
         path.mkdir(parents=True, exist_ok=True)
-        os.startfile(str(path))
+        try:
+            open_directory(path)
+        except OSError as exc:
+            messagebox.showerror('Cannot open folder', str(exc))
 
     def remove(self):
         for job in self.selected():
@@ -236,14 +240,14 @@ if __name__ == '__main__':
         import tempfile
         import json
         with tempfile.TemporaryDirectory() as folder:
-            os.environ['LOCALAPPDATA'] = folder
+            os.environ['OPENDOWNLOAD_DATA_DIR'] = folder
             app = App()
             app.update()
             app.refresh()
             app.add_dialog()
             app.update()
             Path(sys.argv[2]).write_text(json.dumps({'ok': True, 'frozen': bool(getattr(sys, 'frozen', False)),
-                'tk': tk.TkVersion, 'version': '0.1.0'}), encoding='utf-8')
+                'tk': tk.TkVersion, 'version': VERSION}), encoding='utf-8')
             app.destroy()
     else:
         App().mainloop()

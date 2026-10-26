@@ -1,0 +1,144 @@
+name: Build cross-platform preview
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  desktop:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            platform: Windows-x64
+          - os: ubuntu-22.04
+            platform: Linux-x64
+          - os: macos-15
+            platform: macOS-arm64
+          - os: macos-15-intel
+            platform: macOS-x86_64
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        if: runner.os == 'Windows'
+        with:
+          python-version: '3.14'
+      - uses: actions/setup-dotnet@v4
+        if: runner.os == 'Windows'
+        with:
+          dotnet-version: '10.0.x'
+      - name: Install native macOS Python with Tk
+        if: runner.os == 'macOS'
+        run: |
+          curl --fail --location --retry 3 https://www.python.org/ftp/python/3.14.4/python-3.14.4-macos11.pkg -o /tmp/python.pkg
+          sudo installer -pkg /tmp/python.pkg -target /
+          echo '/Library/Frameworks/Python.framework/Versions/3.14/bin' >> "$GITHUB_PATH"
+      - name: Install Linux build dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y python3-tk python3-venv xvfb libxss1
+          python3 -m venv .venv
+          echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
+      - name: Test transfer engine
+        run: python -m unittest -v test_engine.py
+      - name: Build Windows
+        if: runner.os == 'Windows'
+        shell: powershell
+        run: |
+          .\packaging\build.ps1
+          $exe = Join-Path $PWD 'dist/OpenDownload/OpenDownload.exe'
+          $report = Join-Path $PWD 'build/frozen-smoke.json'
+          $process = Start-Process $exe -ArgumentList '--smoke-test',$report -PassThru -Wait -WindowStyle Hidden
+          if ($process.ExitCode -ne 0) { throw 'Packaged app failed' }
+          if (!(Get-Content $report -Raw | ConvertFrom-Json).ok) { throw 'Smoke test failed' }
+      - name: Build macOS app and DMG
+        if: runner.os == 'macOS'
+        run: |
+          python3 -m pip install pyinstaller==6.22.3
+          python3 packaging/build_desktop.py
+      - name: Build Linux packages under virtual display
+        if: runner.os == 'Linux'
+        run: |
+          python -m pip install pyinstaller==6.22.3
+          xvfb-run -a python packaging/build_desktop.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.platform }}
+          path: |
+            release/*.msi
+            release/*.dmg
+            release/*.deb
+            release/*.tar.gz
+          if-no-files-found: error
+  android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+      - uses: gradle/actions/setup-gradle@v4
+        with:
+          gradle-version: '8.9'
+      - name: Restore persistent release signing key
+        env:
+          SIGNING_KEY: ${{ secrets.ANDROID_SIGNING_KEYSTORE }}
+        run: |
+          test -n "$SIGNING_KEY"
+          printf '%s' "$SIGNING_KEY" | base64 --decode > "$RUNNER_TEMP/android-release.jks"
+          echo "ANDROID_KEYSTORE_PATH=$RUNNER_TEMP/android-release.jks" >> "$GITHUB_ENV"
+      - name: Build Android APK and test APK
+        working-directory: android
+        env:
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+        run: gradle --no-daemon :app:assembleRelease :app:assembleDebug :app:assembleDebugAndroidTest :app:lintRelease
+      - name: Enable emulator acceleration
+        run: |
+          echo 'KERNEL=="kvm", GROUP="kvm", MODE="0666", OPTIONS+="static_node=kvm"' | sudo tee /etc/udev/rules.d/99-kvm4all.rules
+          sudo udevadm control --reload-rules
+          sudo udevadm trigger --name-match=kvm
+      - name: Test Android launch and real background download
+        uses: reactivecircus/android-emulator-runner@v2
+        with:
+          api-level: 35
+          arch: x86_64
+          target: google_apis
+          disable-animations: true
+          script: |
+            adb install android/app/build/outputs/apk/debug/app-debug.apk
+            adb install android/app/build/outputs/apk/androidTest/debug/app-debug-androidTest.apk
+            adb shell am instrument -w io.github.spatsariya.opendownload.test/io.github.spatsariya.opendownload.SmokeInstrumentation | tee android-test.txt
+            grep DOWNLOAD_SMOKE_OK android-test.txt
+      - name: Prepare signed APK
+        run: |
+          mkdir -p release
+          cp android/app/build/outputs/apk/release/app-release.apk release/OpenDownload-0.2.0-Android.apk
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Android
+          path: release/*.apk
+  publish:
+    needs: [desktop, android]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          path: collected
+          merge-multiple: true
+      - name: Verify expected assets and publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          test -f collected/OpenDownload-0.2.0-x64.msi
+          test -f collected/OpenDownload-0.2.0-macOS-arm64.dmg
+          test -f collected/OpenDownload-0.2.0-macOS-x86_64.dmg
+          test -f collected/OpenDownload-0.2.0-Linux-amd64.deb
+          test -f collected/OpenDownload-0.2.0-Android.apk
+          (cd collected && sha256sum * > SHA256SUMS.txt)
+          gh release create v0.2.0 collected/* --target "$GITHUB_SHA" --title 'OpenDownload 0.2.0 — Cross-platform preview' --notes-file release/RELEASE-NOTES-0.2.0.md --prerelease

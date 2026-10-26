@@ -33,7 +33,7 @@ public class MainActivity extends Activity {
             JSONArray saved=new JSONArray(getPreferences(0).getString("ids","[]"));
             for (int i=0;i<saved.length();i++) ids.add(saved.getLong(i));
         } catch(Exception ignored) {}
-        LinearLayout root=new LinearLayout(this); root.setId(1001); root.setOrientation(LinearLayout.VERTICAL);
+        LinearLayout root=new LinearLayout(this); root.setId(R.id.main_root); root.setOrientation(LinearLayout.VERTICAL);
         root.setBackgroundColor(Color.rgb(249,251,254)); root.setPadding(dp(20),dp(28),dp(20),dp(16));
         root.setOnApplyWindowInsetsListener((v,insets)->{v.setPadding(dp(20),insets.getSystemWindowInsetTop()+dp(20),dp(20),insets.getSystemWindowInsetBottom()+dp(12));return insets;});
         TextView title=text("OpenDownload",27,Color.rgb(28,44,67)); title.setTypeface(null,Typeface.BOLD);root.addView(title);

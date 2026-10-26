@@ -42,7 +42,7 @@ jobs:
           python3 -m venv .venv
           echo "$PWD/.venv/bin" >> "$GITHUB_PATH"
       - name: Test transfer engine
-        run: python -m unittest -v test_engine.py
+        run: python -m unittest discover -v
       - name: Build Windows
         if: runner.os == 'Windows'
         shell: powershell

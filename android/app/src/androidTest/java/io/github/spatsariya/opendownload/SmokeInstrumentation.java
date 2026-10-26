@@ -20,7 +20,7 @@ public class SmokeInstrumentation extends Instrumentation {
                 OutputStream out=client.getOutputStream();out.write(("HTTP/1.1 200 OK\r\nContent-Length: "+expected.length+"\r\nContent-Type: application/octet-stream\r\nConnection: close\r\n\r\n").getBytes("US-ASCII"));out.write(expected);out.flush();
             }catch(Exception ignored){}});responder.setDaemon(true);responder.start();
             activity=(MainActivity)startActivitySync(new Intent(getTargetContext(),MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
-            if(activity.findViewById(1001)==null)throw new AssertionError("Main UI did not launch");
+            if(activity.findViewById(R.id.main_root)==null)throw new AssertionError("Main UI did not launch");
             MainActivity target=activity;AtomicLong transfer=new AtomicLong();
             runOnMainSync(()->transfer.set(target.enqueue("http://127.0.0.1:"+server.getLocalPort()+"/check.bin")));id=transfer.get();
             boolean complete=false;
